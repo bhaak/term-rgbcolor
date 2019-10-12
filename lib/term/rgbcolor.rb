@@ -1,7 +1,17 @@
-require "term/rgbcolor/version"
+require_relative "rgbcolor/version"
 
 module Term
-  module RGBColor
-    # Your code goes here...
+  class RGBColor
+
+    def initialize(r, g, b, bg: false)
+      @r, @g, @b = r ,g, b
+      @bg = bg
+    end
+
+    def to_s
+      code = @bg ? '48' : '38'
+      "\e[#{code};2;#{@r};#{@g};#{@b}m"
+    end
+
   end
 end
