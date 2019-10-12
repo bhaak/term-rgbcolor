@@ -21,6 +21,17 @@ RSpec.describe Term::RGBColor do
     it 'returns a background RGB escape sequence' do
       expect("#{Term::RGBColor.new(r,g,b, bg: true)}").to eq "\e[48;2;80;160;240m"
     end
+
+    describe 'with the enviromental variable NO_COLOR' do
+      before :each do
+        expect(ENV).to receive(:[]).with('NO_COLOR').and_return ''
+      end
+
+      it 'returns the empty string' do
+        expect("#{Term::RGBColor.new(r,g,b)}").to eq ""
+      end
+
+    end
   end
 
 end
