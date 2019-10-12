@@ -8,13 +8,17 @@ module Term
       @bg = bg
 
       @no_color = !ENV['NO_COLOR'].nil?
+      @truecolor = (ENV['COLORTERM'] == 'truecolor')
     end
 
     def to_s
       return '' if @no_color
+      return '' unless @truecolor
 
-      code = @bg ? '48' : '38'
-      "\e[#{code};2;#{@r};#{@g};#{@b}m"
+      if @truecolor
+        code = @bg ? '48' : '38'
+        "\e[#{code};2;#{@r};#{@g};#{@b}m"
+      end
     end
 
   end
