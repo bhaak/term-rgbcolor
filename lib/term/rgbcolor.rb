@@ -6,6 +6,7 @@ module Term
     def initialize(r, g, b, bg: false)
       @r, @g, @b = r ,g, b
       @bg = bg
+      @cache = nil
 
       @no_color = !ENV['NO_COLOR'].nil?
       @truecolor = (ENV['COLORTERM'] == 'truecolor')
@@ -16,17 +17,18 @@ module Term
     end
 
     def to_s
+      return @cache if @cache
       return '' if @no_color
       return '' unless @truecolor || @@colors >= 256
 
       code = @bg ? '48' : '38'
       if @truecolor
-        return "\e[#{code};2;#{@r};#{@g};#{@b}m"
+        @cache = "\e[#{code};2;#{@r};#{@g};#{@b}m"
       elsif @@colors256
-        color = @@colors256[(@r<<16)+(@g<<8)+@b]
-        return "\e[#{code};5;#{color}m" if color
+        color = get_256_color_index(@r, @g, @b)
+        @cache = "\e[#{code};5;#{color}m" if color
       end
-      ''
+      @cache ||= ''
     end
 
     private
@@ -42,6 +44,37 @@ module Term
         end
       end
       colors
+    end
+
+    def get_256_color_index(r, g, b)
+      color = (r<<16) + (g<<8) + b
+      return @@colors256[color] if @@colors256[color]
+
+      # look for an exact match
+      current_index = -1
+      previous_match = 2**32
+      @@colors256.each {|value, index|
+        distance = color_distance(r, g, b, value);
+        if (distance < previous_match) then
+          previous_match = distance;
+          current_index = index
+        end
+      }
+      current_index
+    end
+
+    # Calculate the color distance between two colors.
+    # Algorithm taken from https://www.compuphase.com/cmetric.htm
+    def color_distance(r1, g1, b1, rgb2)
+      r2 = (rgb2 >> 16) & 0xFF;
+      g2 = (rgb2 >>  8) & 0xFF;
+      b2 = (rgb2      ) & 0xFF;
+
+      rmean = (r1 + r2) / 2;
+      r = r1 - r2;
+      g = g1 - g2;
+      b = b1 - b2;
+      return ((((512+rmean)*r*r)>>8) + 4*g*g + (((767-rmean)*b*b)>>8));
     end
 
   end

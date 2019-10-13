@@ -48,6 +48,13 @@ RSpec.describe Term::RGBColor do
         expect("#{Term::RGBColor.new(255,215,135)}").to eq "\e[38;5;222m"
         expect("#{Term::RGBColor.new( 95,175,135)}").to eq "\e[38;5;72m"
       end
+
+      describe 'with RGB values not exactly equal to a 256 color escape sequence' do
+        it 'returns a close match' do
+          expect("#{Term::RGBColor.new(250,210,130)}").to eq "\e[38;5;222m"
+          expect("#{Term::RGBColor.new(100,180,140)}").to eq "\e[38;5;72m"
+        end
+      end
     end
 
     describe 'without 256 color support' do
