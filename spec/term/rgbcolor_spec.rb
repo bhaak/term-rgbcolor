@@ -16,6 +16,7 @@ RSpec.describe Term::RGBColor do
 
     before :each do
       allow(ENV).to receive(:[]).and_return nil
+      Term::RGBColor.class_variable_set(:@@colors, nil)
     end
 
     describe '24 bit color support' do
@@ -41,6 +42,23 @@ RSpec.describe Term::RGBColor do
         end
       end
     end
+
+    describe 'without 24 bit color support' do
+      it 'falls back to 256 color escape sequences' do
+        expect("#{Term::RGBColor.new(255,215,135)}").to eq "\e[38;5;222m"
+        expect("#{Term::RGBColor.new( 95,175,135)}").to eq "\e[38;5;72m"
+      end
+    end
+
+    describe 'without 256 color support' do
+      before :each do
+        allow_any_instance_of(Kernel).to receive(:`).and_return nil
+      end
+      it 'returns an empty string' do
+        expect("#{Term::RGBColor.new(255,215,135)}").to eq ''
+      end
+    end
+
   end
 
 end
