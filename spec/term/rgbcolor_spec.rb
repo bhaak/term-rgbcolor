@@ -65,8 +65,16 @@ RSpec.describe Term::RGBColor do
       before :each do
         allow_any_instance_of(Kernel).to receive(:`).and_return nil
       end
+
       it 'returns an empty string' do
         expect("#{Term::RGBColor.new(255,215,135)}").to eq ''
+      end
+
+      describe 'with a fallback color defined' do
+        it 'returns the fallback color' do
+          expect("#{Term::RGBColor.new(1,1,1, fallback: :red)}").to eq "\e[31m"
+          expect("#{Term::RGBColor.new(1,1,1, fallback: :red, bg: true)}").to eq "\e[41m"
+        end
       end
     end
 

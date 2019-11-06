@@ -3,10 +3,22 @@ require_relative "rgbcolor/version"
 module Term
   class RGBColor
 
-    def initialize(r, g, b, bg: false)
+    FALLBACK_COLORS = {
+      black:   0,
+      red:     1,
+      green:   2,
+      yellow:  3,
+      blue:    4,
+      magenta: 5,
+      cyan:    6,
+      white:   7,
+    }
+
+    def initialize(r, g, b, bg: false, fallback: nil)
       @r, @g, @b = r ,g, b
       @bg = bg
       @cache = nil
+      @fallback = fallback
 
       @no_color = !ENV['NO_COLOR'].nil?
       @truecolor = (ENV['COLORTERM'] == 'truecolor')
@@ -19,7 +31,14 @@ module Term
     def to_s
       return @cache if @cache
       return '' if @no_color
-      return '' unless @truecolor || @@colors >= 256
+
+      if @@colors < 256 && !@truecolor
+        if @fallback
+          return "\e[#{@bg ? '4' : '3'}#{FALLBACK_COLORS.fetch(@fallback)}m"
+        else
+          return ''
+        end
+      end
 
       code = @bg ? '48' : '38'
       if @truecolor
