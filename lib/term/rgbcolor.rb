@@ -22,8 +22,7 @@ module Term
 
       @no_color = !ENV['NO_COLOR'].nil?
       @truecolor = (ENV['COLORTERM'] == 'truecolor')
-      @@colors ||= `tput colors`.to_i rescue 0
-      if !@truecolor && @@colors == 256
+      if !@truecolor && colors == 256
         @@colors256 ||= self.class.init_256colors
       end
     end
@@ -32,7 +31,7 @@ module Term
       return @cache if @cache
       return '' if @no_color
 
-      if @@colors < 256 && !@truecolor
+      if colors < 256 && !@truecolor
         if @fallback
           return "\e[#{@bg ? '4' : '3'}#{FALLBACK_COLORS.fetch(@fallback)}m"
         else
@@ -50,7 +49,15 @@ module Term
       @cache ||= ''
     end
 
+    def self.colors
+      @@colors ||= `tput colors`.to_i rescue 0
+    end
+
     private
+
+    def colors
+      self.class.colors
+    end
 
     def self.init_256colors
       c = [0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff]
